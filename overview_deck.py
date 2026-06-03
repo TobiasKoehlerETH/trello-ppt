@@ -97,6 +97,9 @@ def _clear_header_fill(table) -> None:
     """Remove background fill from the column header row."""
     for cell in table.rows[0].cells:
         cell.fill.background()
+        for paragraph in cell.text_frame.paragraphs:
+            for run in paragraph.runs:
+                run.font.bold = True
 
 
 def _estimate_height(text: str, chars_per_line: int = 26, max_lines: int = 3) -> int:
@@ -146,7 +149,17 @@ def _legend_slide2(slide) -> None:
     """Small Red/Yellow/Green priority legend at the top-right of the overview slide."""
     dia = Inches(0.15)
     y = Inches(0.74)
-    x = Inches(8.95)
+    x = Inches(8.15)
+    label = slide.shapes.add_textbox(x, y - Inches(0.02), Inches(0.78), Inches(0.32))
+    label.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+    run = label.text_frame.paragraphs[0].add_run()
+    run.text = "Priority"
+    run.font.name = CARD_FONT
+    run.font.size = Pt(12)
+    run.font.bold = True
+    run.font.color.rgb = MUTED
+    x += Inches(0.90)
+
     for level, lbl in ((HIGH, "High"), (MEDIUM, "Medium"), (LOW, "Low")):
         dot = slide.shapes.add_shape(MSO_SHAPE.OVAL, x, y + Inches(0.04), dia, dia)
         dot.fill.solid()
@@ -159,6 +172,7 @@ def _legend_slide2(slide) -> None:
         run.text = lbl
         run.font.name = CARD_FONT
         run.font.size = Pt(12)
+        run.font.bold = True
         run.font.color.rgb = MUTED
         x += Inches(1.35)
 
