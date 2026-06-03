@@ -1,6 +1,6 @@
 # Trello → PowerPoint Weekly Status
 
-Generate a one-slide PowerPoint **status summary** of a Trello kanban board:
+Generate a PowerPoint **status summary** of a Trello kanban board:
 
 - ✅ **Completed in the last 7 days** — cards moved into the *Done* list, newest first.
 - ⭐ **Top priority** — the single most important open (not-yet-Done) card, highlighted.
@@ -8,9 +8,10 @@ Generate a one-slide PowerPoint **status summary** of a Trello kanban board:
   Trello labels (label *name* like `High`/`Medium`/`Low`, or label *colour*
   red / orange-yellow / green).
 
-The slide is drawn onto a PowerPoint template (`template.pptx`), so it's easy to
-rebrand. A small pure-Python Trello CLI (`trello_integration.py`) is included for
-listing boards/lists/cards and creating cards.
+Use `trello_to_ppt.py` for a one-slide summary, or `overview_deck.py` for the
+branded two-slide overview deck. A small pure-Python Trello CLI
+(`trello_integration.py`) is included for listing boards/lists/cards and
+creating cards.
 
 ![Example slide](docs/preview.png)
 
@@ -110,13 +111,17 @@ of it instead of generating from scratch. Provide a **two-slide template**:
 
 1. **Slide 1** — a title slide. Any `DD.MM.YYYY` date on it is refreshed to today
    automatically. The slide is otherwise left untouched.
-2. **Slide 2** — an "Overview" slide containing a **3-column table** with headers
-   `To do` / `In progress` / `Completed`.
+2. **Slide 2** — an "Overview" slide containing a **3-column table** with
+   unfilled headers: `To do` / `In progress` / `Completed`.
 
-The script fills slide 2 with one textbox per card, and **colours each card's
-border by importance** (Red = High, Yellow = Medium, Green = Low — from the same
-label rules above). Trello lists are mapped onto the three columns by name
-(e.g. `Backlog`/`To Do` → To do, `Doing`/`Review` → In progress, `Done` → Completed).
+The script fills slide 2 with one textbox per prioritized card. Each card gets a
+soft importance tint plus a solid left accent bar (Red = High, Yellow = Medium,
+Green = Low — from the same label rules above), and a small legend is added to
+the top right of the overview slide. Unrated cards are omitted so the slide stays
+focused on prioritized work.
+
+Trello lists are mapped onto the three columns by name
+(e.g. `Today` → To do, `Top Priority` → In progress, `Done` → Completed).
 
 ```powershell
 # Preview with sample data (no Trello calls)
@@ -146,6 +151,7 @@ python .\trello_integration.py create-card <list_id> "Title" -d "Details"
 ```
 trello_integration.py   # Trello REST helpers + standalone CLI
 trello_to_ppt.py        # Build the weekly-status slide
+overview_deck.py        # Build the branded two-slide overview deck
 make_template.py        # Regenerate template.pptx
 template.pptx           # Widescreen base deck (styling only)
 requirements.txt        # python-pptx

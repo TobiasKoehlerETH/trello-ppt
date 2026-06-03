@@ -28,7 +28,8 @@ from pathlib import Path
 from typing import Any
 
 from pptx import Presentation
-from pptx.enum.shapes import MSO_SHAPE_TYPE
+from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Emu, Inches, Pt
 
@@ -92,25 +93,46 @@ def _find_table(slide):
     return None
 
 
+def _clear_header_fill(table) -> None:
+    """Remove background fill from the column header row."""
+    for cell in table.rows[0].cells:
+        cell.fill.background()
+
+
 def _estimate_height(text: str, chars_per_line: int = 26, max_lines: int = 3) -> int:
     lines = min(max_lines, max(1, math.ceil(len(text) / chars_per_line)))
     return Inches(0.40 + 0.30 * (lines - 1))
 
 
-def _add_card(slide, left, top, width, text: str, level: int):
-    height = _estimate_height(text)
-    box = slide.shapes.add_textbox(left, top, width, height)
-    box.fill.solid()
-    box.fill.fore_color.rgb = WHITE
-    box.line.color.rgb = LEVELS[level]["color"]
-    box.line.width = Pt(CARD_BORDER_PT)
-    box.shadow.inherit = False
+def _tint(color, ratio: float):
+    """Blend ``color`` toward white (ratio 0 = original, 1 = white)."""
+    return RGBColor(*(int(c + (255 - c) * ratio) for c in color))
 
+
+def _add_card(slide, left, top, width, text: str, level: int):
+    """Option A card: an importance-tinted card with a solid left accent bar + bold title."""
+    height = _estimate_height(text)
+    base = LEVELS[level]["color"]
+
+    card = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, width, height)
+    card.fill.solid()
+    card.fill.fore_color.rgb = _tint(base, 0.86)
+    card.line.color.rgb = _tint(base, 0.45)
+    card.line.width = Pt(0.75)
+    card.shadow.inherit = False
+
+    bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, Inches(0.12), height)
+    bar.fill.solid()
+    bar.fill.fore_color.rgb = base
+    bar.line.fill.background()
+    bar.shadow.inherit = False
+
+    box = slide.shapes.add_textbox(left + Inches(0.30), top, width - Inches(0.42), height)
     tf = box.text_frame
     tf.word_wrap = True
     tf.vertical_anchor = MSO_ANCHOR.MIDDLE
-    tf.margin_left = tf.margin_right = Inches(0.1)
-    tf.margin_top = tf.margin_bottom = Inches(0.03)
+    tf.margin_left = tf.margin_right = Inches(0.04)
+    tf.margin_top = tf.margin_bottom = Inches(0.02)
     run = tf.paragraphs[0].add_run()
     run.text = text
     run.font.name = CARD_FONT
@@ -118,6 +140,27 @@ def _add_card(slide, left, top, width, text: str, level: int):
     run.font.bold = True
     run.font.color.rgb = INK
     return height
+
+
+def _legend_slide2(slide) -> None:
+    """Small Red/Yellow/Green priority legend at the top-right of the overview slide."""
+    dia = Inches(0.15)
+    y = Inches(0.74)
+    x = Inches(8.95)
+    for level, lbl in ((HIGH, "High"), (MEDIUM, "Medium"), (LOW, "Low")):
+        dot = slide.shapes.add_shape(MSO_SHAPE.OVAL, x, y + Inches(0.04), dia, dia)
+        dot.fill.solid()
+        dot.fill.fore_color.rgb = LEVELS[level]["color"]
+        dot.line.fill.background()
+        dot.shadow.inherit = False
+        box = slide.shapes.add_textbox(x + Inches(0.22), y - Inches(0.02), Inches(1.05), Inches(0.32))
+        box.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+        run = box.text_frame.paragraphs[0].add_run()
+        run.text = lbl
+        run.font.name = CARD_FONT
+        run.font.size = Pt(12)
+        run.font.color.rgb = MUTED
+        x += Inches(1.35)
 
 
 def _add_more(slide, left, top, width, remaining: int) -> None:
@@ -135,6 +178,8 @@ def fill_overview(slide, columns: list[tuple[str, list[tuple[str, int]]]]) -> No
     table_shape = _find_table(slide)
     if table_shape is None:
         raise SystemExit("Template slide 2 has no table to fill.")
+
+    _clear_header_fill(table_shape.table)
 
     t_left, t_top = table_shape.left, table_shape.top
     t_width, t_height = table_shape.width, table_shape.height
@@ -258,6 +303,9 @@ def _demo_columns() -> list[tuple[str, list[tuple[str, int]]]]:
 # Build
 # --------------------------------------------------------------------------- #
 def build_deck(columns, template_path, output_path, date_str: str) -> Path:
+    # Cards with no priority label (NONE) are ignored on the slide.
+    columns = [(title, [(n, lvl) for n, lvl in cards if lvl != NONE]) for title, cards in columns]
+
     prs = Presentation(str(template_path))
     if len(prs.slides) < 2:
         raise SystemExit("Template must have at least 2 slides (title + overview).")
@@ -268,6 +316,7 @@ def build_deck(columns, template_path, output_path, date_str: str) -> Path:
     overview = prs.slides[1]
     _remove_textboxes(overview)
     fill_overview(overview, columns)
+    _legend_slide2(overview)
 
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -298,8 +347,8 @@ def main(argv: list[str] | None = None) -> int:
         columns = fetch_overview_columns(args.board, days=args.days)
 
     out = build_deck(columns, args.template, args.output, args.date)
-    total = sum(len(c) for _, c in columns)
-    print(f"Wrote {out}  (date {args.date}, {total} cards across {len(columns)} columns)")
+    total = sum(1 for _, cards in columns for _n, lvl in cards if lvl != NONE)
+    print(f"Wrote {out}  (date {args.date}, {total} prioritised cards across {len(columns)} columns)")
     return 0
 
 
