@@ -103,6 +103,32 @@ the status slide inherits its styling. Regenerate the default with:
 python .\make_template.py
 ```
 
+## Branded two-slide deck (`overview_deck.py`)
+
+If you already have a branded PowerPoint, `overview_deck.py` builds a deck on top
+of it instead of generating from scratch. Provide a **two-slide template**:
+
+1. **Slide 1** — a title slide. Any `DD.MM.YYYY` date on it is refreshed to today
+   automatically. The slide is otherwise left untouched.
+2. **Slide 2** — an "Overview" slide containing a **3-column table** with headers
+   `To do` / `In progress` / `Completed`.
+
+The script fills slide 2 with one textbox per card, and **colours each card's
+border by importance** (Red = High, Yellow = Medium, Green = Low — from the same
+label rules above). Trello lists are mapped onto the three columns by name
+(e.g. `Backlog`/`To Do` → To do, `Doing`/`Review` → In progress, `Done` → Completed).
+
+```powershell
+# Preview with sample data (no Trello calls)
+python .\overview_deck.py --demo --template your_template.pptx -o output\status_deck.pptx
+
+# Live board
+python .\overview_deck.py "My Board" --template your_template.pptx
+```
+
+> Your branded `.pptx` template stays **out of git** (only `template.pptx` is
+> tracked), so private branding and content are never pushed.
+
 ## Trello CLI (optional)
 
 `trello_integration.py` is a dependency-free helper used by the generator and
