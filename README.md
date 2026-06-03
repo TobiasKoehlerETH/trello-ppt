@@ -13,7 +13,7 @@ branded two-slide overview deck. A small pure-Python Trello CLI
 (`trello_integration.py`) is included for listing boards/lists/cards and
 creating cards.
 
-![Example slide](docs/preview.png)
+![Status deck overview slide](docs/preview.png)
 
 ## Requirements
 
