@@ -1,0 +1,11 @@
+# Secrets — never commit real credentials
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Generated decks (keep the committed template, ignore everything else)
+output/
+*.pptx
+!template.pptx
