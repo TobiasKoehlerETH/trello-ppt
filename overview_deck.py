@@ -40,7 +40,6 @@ from trello_to_ppt import (
 )
 
 HERE = Path(__file__).parent
-DEFAULT_TEMPLATE = HERE / "example.pptx"
 DEFAULT_OUTPUT = HERE / "output" / "status_deck.pptx"
 
 CARD_FONT = "Futura Md BT"          # matches the template
@@ -343,7 +342,7 @@ def main(argv: list[str] | None = None) -> int:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("board", nargs="?", help="Trello board id or exact name")
-    parser.add_argument("--template", default=str(DEFAULT_TEMPLATE), help="Base .pptx (default example.pptx)")
+    parser.add_argument("--template", required=True, help="Base .pptx template")
     parser.add_argument("--output", "-o", default=str(DEFAULT_OUTPUT), help="Output .pptx path")
     parser.add_argument("--date", default=_dt.date.today().strftime("%d.%m.%Y"),
                         help="Title-slide date (default today, DD.MM.YYYY)")

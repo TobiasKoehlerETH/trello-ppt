@@ -10,9 +10,9 @@ The slide answers three questions at a glance:
   card's Trello labels (label *name* such as High/Medium/Low, or label *colour*
   red / orange-yellow / green).
 
-Credentials live in ``.env`` — see :mod:`trello_integration`. The slide is drawn
-onto a PowerPoint template (``template.pptx`` by default) so the look and feel is
-easy to rebrand.
+Credentials live in ``.env`` — see :mod:`trello_integration`. If a local
+``template.pptx`` exists, the slide is drawn onto it; otherwise the script falls
+back to a blank widescreen deck.
 
 Examples
 --------
@@ -450,7 +450,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("board", nargs="?", help="Trello board id or exact board name")
     parser.add_argument("--days", type=int, default=7, help="Look-back window for completed cards (default 7)")
     parser.add_argument("--done-list", default="Done", help='Name of the completed list (default "Done")')
-    parser.add_argument("--template", default=str(DEFAULT_TEMPLATE), help="Base .pptx template")
+    parser.add_argument("--template", default=str(DEFAULT_TEMPLATE), help="Optional local base .pptx template")
     parser.add_argument("--output", "-o", default=str(DEFAULT_OUTPUT), help="Output .pptx path")
     parser.add_argument("--max-completed", type=int, default=6, help="Max completed cards listed (default 6)")
     parser.add_argument("--demo", action="store_true", help="Render built-in sample data without calling Trello")

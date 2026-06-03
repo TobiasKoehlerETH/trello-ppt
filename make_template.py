@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Create ``template.pptx`` — the widescreen base deck used by trello_to_ppt.py.
+"""Create a local ``template.pptx`` for trello_to_ppt.py.
 
 The template carries the look and feel (slide size, theme, fonts, master
 background). ``trello_to_ppt.py`` opens it and *adds* a status slide onto it, so
 to rebrand the output you only need to replace ``template.pptx`` with your own
-PowerPoint file — no code changes required.
+PowerPoint file — no code changes required. Generated ``.pptx`` templates are
+ignored by git.
 
 Run this once to regenerate the default template:
 

@@ -75,7 +75,7 @@ The deck is written to `output\board_summary.pptx` by default.
 | `board` | – | Trello board **id** or exact **name** (omit only with `--demo`) |
 | `--days` | `7` | Look-back window for completed cards |
 | `--done-list` | `Done` | Name of the list that means "completed" |
-| `--template` | `template.pptx` | Base PowerPoint template to draw onto |
+| `--template` | `template.pptx` if present | Optional local PowerPoint template to draw onto |
 | `--output`, `-o` | `output/board_summary.pptx` | Output path |
 | `--max-completed` | `6` | Max completed cards listed before "+N more" |
 | `--demo` | – | Render sample data without calling Trello |
@@ -96,9 +96,10 @@ red / yellow / green label colours) on your Trello board.
 
 ## Customising the look
 
-`template.pptx` is a plain widescreen PowerPoint with no slides — just the theme,
-fonts and master. Replace it with any branded `.pptx` (or pass `--template`) and
-the status slide inherits its styling. Regenerate the default with:
+PowerPoint templates are intentionally kept out of git. To use a local base
+template, pass any `.pptx` with `--template`; otherwise the one-slide generator
+falls back to a blank widescreen deck. You can generate a local starter template
+with:
 
 ```powershell
 python .\make_template.py
@@ -131,8 +132,8 @@ python .\overview_deck.py --demo --template your_template.pptx -o output\status_
 python .\overview_deck.py "My Board" --template your_template.pptx
 ```
 
-> Your branded `.pptx` template stays **out of git** (only `template.pptx` is
-> tracked), so private branding and content are never pushed.
+> All `.pptx` files are git-ignored, so private branding and generated decks stay
+> out of the repository.
 
 ## Trello CLI (optional)
 
@@ -153,7 +154,6 @@ trello_integration.py   # Trello REST helpers + standalone CLI
 trello_to_ppt.py        # Build the weekly-status slide
 overview_deck.py        # Build the branded two-slide overview deck
 make_template.py        # Regenerate template.pptx
-template.pptx           # Widescreen base deck (styling only)
 requirements.txt        # python-pptx
 .env.example            # Credential template (copy to .env)
 ```

@@ -5,7 +5,6 @@
 __pycache__/
 *.pyc
 
-# Generated decks (keep the committed template, ignore everything else)
+# Generated decks and local PowerPoint templates
 output/
 *.pptx
-!template.pptx
